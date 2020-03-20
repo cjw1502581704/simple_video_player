@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="stylesheet" href="../css/font-awesome.css">
+  <link rel="stylesheet" href="../css/css.css">
+</head>
+<body>
+<h3 class="playerTitle">视频播放器</h3>
+<div class="player">
+  <video src="../mp4/chrome.mp4"></video>
+  <div class="controls">
+<!--    暂停/播放按钮-->
+    <a href="javascript:;" class="switch fa fa-play"></a>
+<!--    全屏按钮-->
+    <a href="javascript:;" class="expand fa fa-expand"></a>
+<!--    进度条部分-->
+    <div class="progress">
+<!--      控制层-->
+      <div class="bar"></div>
+<!--      已加载部分-->
+      <div class="loaded"></div>
+<!--      播放进度-->
+      <div class="elapse"></div>
+    </div>
+    <div class="time">
+<!--      当前时间-->
+      <span class="currentTime">00:00:00</span>
+      \
+<!--      总时间-->
+      <span class="totalTime">00:00:00</span>
+    </div>
+  </div>
+</div>
+<script src="../js/jquery.min.js"></script>
+<script>
+$(function () {
+  // 获取播放器
+  var video = $('video')[0]
+
+  // 控制播放和暂停
+  var playToggle = function () {
+    if (video.paused) {
+      video.play()
+    } else {
+      video.pause()
+    }
+    // 播放暂停按钮样式切换
+    $('.switch').toggleClass('fa-play fa-pause')
+  }
+  // 点击按钮时
+  $('.switch').click(playToggle);
+  // 点击播放区域时
+  $("video").click(playToggle);
+
+  // 全屏功能
+  $('.expand').click(function () {
+    // 不同浏览器能力测试
+    if (video.requestFullScreen) {
+      video.requestFullScreen()
+    } else if (video.webkitRequestFullScreen) {
+      video.webkitRequestFullScreen()
+    } else if (video.mozRequestFullScreen) {
+      video.mozRequestFullScreen()
+    } else if (video.msRequestFullScreen) {
+      video.msRequestFullScreen()
+    }
+  })
+
+  // 处理视频时间
+  // 返回  hh:mm:ss 格式的时间
+  var getVideoTime = function (time) {
+    var hour = Math.floor(time / 3600)
+    hour = hour < 10 ? '0' + hour : hour
+    var min = Math.floor(time % 3600 / 60)
+    min = min < 10 ? '0' + min : min
+    var sec = Math.floor(time % 60)
+    sec = sec < 10 ? '0' + sec : sec
+    return hour + ':' + min + ':' + sec
+  }
+
+  // 加载视频-
+  video.oncanplay = function () {
+    setTimeout(function () {
+      video.style.display = 'block'
+      var total = video.duration
+      // 处理视频总时长
+      const time = getVideoTime(total)
+      // 显示视频总时长
+      $('.totalTime').html(time)
+    }, 2000)
+  }
+
+  // 进度条变化
+  video.ontimeupdate = function () {
+    // 获取当前播放时长
+    var time = video.currentTime
+    currentTime = getVideoTime(time)
+    // 实时修改播放时长
+    $('.currentTime').html(currentTime)
+    // 进度条变化
+    var play = time / video.duration * 100 + '%'
+    $('.elapse').css('width', play)
+  }
+
+  //点击进度条跳播
+  $('.bar').click(function (e) {
+    // 得到点击位置占总长比例
+    var position = e.offsetX / $(this).width()
+    video.currentTime = video.duration * position
+  })
+
+  // 视频结束时回到开头暂停
+  video.onended = function () {
+    video.currentTime = 0
+    $('.switch').removeClass('fa-pause').addClass('fa-play')
+  }
+})
+</script>
+</body>
+</html>
